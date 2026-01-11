@@ -4,10 +4,17 @@ import { useRequestStore } from "../store/useRequestStore";
 import { useEnvStore } from "../store/useEnvStore";
 import { Button } from "./ui/Button";
 
-export const Sidebar = () => {
+export const Sidebar = ({ searchTerm = "" }) => {
   const { collections, currentRequest, setCurrentRequest, deleteRequest } =
     useRequestStore();
   const { environments, activeEnvId, setActiveEnv } = useEnvStore();
+
+  const filteredCollections = collections.filter(
+    (req) =>
+      req.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.method.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const createNewRequest = () => {
     setCurrentRequest({
@@ -55,7 +62,7 @@ export const Sidebar = () => {
             Collections
           </h3>
           <div className="space-y-1">
-            {collections.map((req) => (
+            {filteredCollections.map((req) => (
               <div
                 key={req.id}
                 onClick={() => setCurrentRequest(req)}

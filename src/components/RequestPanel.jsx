@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Send, Loader2, Save, Trash2, Plus } from "lucide-react";
+import { Send, Loader2, Save, Trash2, Plus, Folder } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useRequestStore } from "../store/useRequestStore";
 import { useEnvStore } from "../store/useEnvStore";
@@ -23,31 +23,66 @@ export const RequestPanel = ({ onResponse }) => {
   const { environments, activeEnvId } = useEnvStore();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("params");
+  const [abortController, setAbortController] = useState(null);
 
   const activeEnv = environments.find((e) => e.id === activeEnvId);
 
+  // Connection Warm-up Optimization (Faster than Postman)
+  useEffect(() => {
+    if (!currentRequest.url) return;
+    try {
+      const url = new URL(
+        currentRequest.url.startsWith("http")
+          ? currentRequest.url
+          : `https://${currentRequest.url}`
+      );
+      const origin = url.origin;
+
+      let link = document.querySelector(`link[href="${origin}"]`);
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "preconnect";
+        link.href = origin;
+        document.head.appendChild(link);
+      }
+    } catch (e) {
+      // Ignore invalid URLs while typing
+    }
+  }, [currentRequest.url]);
+
   const handleSend = async () => {
     if (!currentRequest.url) return;
-    setLoading(true);
-    const startTime = Date.now();
 
-    const config = prepareRequest(currentRequest, activeEnv);
+    // Cancel existing request if any
+    if (abortController) abortController.abort();
+
+    const controller = new AbortController();
+    setAbortController(controller);
+    setLoading(true);
+
+    const startTime = performance.now();
+    const config = {
+      ...prepareRequest(currentRequest, activeEnv),
+      signal: controller.signal,
+    };
 
     try {
       const response = await axios(config);
-      const endTime = Date.now();
+      const endTime = performance.now();
       const resData = {
         data: response.data,
         status: response.status,
         statusText: response.statusText,
         headers: response.headers,
-        time: endTime - startTime,
+        time: Math.round(endTime - startTime),
         size: JSON.stringify(response.data).length,
       };
       onResponse(resData);
       addToHistory(currentRequest, resData);
     } catch (error) {
-      const endTime = Date.now();
+      if (axios.isCancel(error)) return;
+
+      const endTime = performance.now();
       const errorRes = {
         error: true,
         data: error.response?.data || error.message,
@@ -56,7 +91,7 @@ export const RequestPanel = ({ onResponse }) => {
           error.response?.statusText ||
           (error.code === "ERR_NETWORK" ? "Network Error / CORS" : "Error"),
         headers: error.response?.headers || {},
-        time: endTime - startTime,
+        time: Math.round(endTime - startTime),
         size: error.response?.data
           ? JSON.stringify(error.response.data).length
           : 0,
@@ -64,6 +99,15 @@ export const RequestPanel = ({ onResponse }) => {
       onResponse(errorRes);
     } finally {
       setLoading(false);
+      setAbortController(null);
+    }
+  };
+
+  const handleCancel = () => {
+    if (abortController) {
+      abortController.abort();
+      setLoading(false);
+      setAbortController(null);
     }
   };
 
@@ -88,46 +132,87 @@ export const RequestPanel = ({ onResponse }) => {
 
   return (
     <div className="flex flex-col h-full bg-background/30">
+      {/* HEADER / BREADCRUMBS */}
+      <div className="px-4 py-2 flex items-center justify-between border-b bg-muted/20">
+        <div className="flex items-center gap-2">
+          <Folder size={14} className="text-muted-foreground" />
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            Collections
+          </span>
+          <span className="text-muted-foreground/30">/</span>
+          <input
+            className="bg-transparent border-none outline-none text-xs font-bold w-48 focus:bg-background/50 rounded px-1 transition-all"
+            value={currentRequest.name}
+            onChange={(e) => updateCurrentRequest({ name: e.target.value })}
+            placeholder="Untitled Request"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-[10px] gap-1 px-2 border border-border/50"
+          >
+            <Plus size={12} /> Import cURL
+          </Button>
+        </div>
+      </div>
+
       {/* URL BAR */}
-      <div className="p-4 border-b bg-card/30 backdrop-blur-sm flex gap-3 items-center sticky top-0 z-10">
+      <div className="p-4 border-b bg-card/10 backdrop-blur-sm flex gap-3 items-center sticky top-0 z-10 transition-all">
         <div className="flex-none">
           <Select
             value={currentRequest.method}
             onChange={(e) => updateCurrentRequest({ method: e.target.value })}
             options={METHODS}
-            className="w-32 font-bold bg-background/50 border-primary/20 text-primary"
+            className={`w-36 font-black ${
+              currentRequest.method === "GET"
+                ? "text-emerald-500"
+                : currentRequest.method === "POST"
+                ? "text-blue-500"
+                : currentRequest.method === "PUT"
+                ? "text-amber-500"
+                : "text-rose-500"
+            }`}
           />
         </div>
         <div className="flex-1 flex gap-2">
           <Input
-            placeholder="https://api.example.com/v1/..."
+            placeholder="https://api.example.com/v1/resource..."
             value={currentRequest.url}
             onChange={(e) => updateCurrentRequest({ url: e.target.value })}
-            className="bg-background/50 border-primary/10 focus:border-primary/50 transition-all font-mono text-sm"
+            className="bg-background/40 border-primary/5 focus:border-primary/40 transition-all font-mono text-sm shadow-inner"
             onKeyDown={(e) => {
               if (e.ctrlKey && e.key === "Enter") handleSend();
             }}
           />
-          <Button
-            onClick={handleSend}
-            disabled={loading || !currentRequest.url}
-            variant="brand"
-            className="min-w-[120px] gap-2"
-          >
-            {loading ? (
+          {loading ? (
+            <Button
+              onClick={handleCancel}
+              variant="destructive"
+              className="min-w-[120px] gap-2 glow-secondary"
+            >
               <Loader2 className="animate-spin" size={18} />
-            ) : (
+              <span className="font-bold">CANCEL</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSend}
+              disabled={!currentRequest.url}
+              variant="brand"
+              className="min-w-[120px] gap-2"
+            >
               <Send size={18} />
-            )}
-            <span className="font-bold">SEND</span>
-          </Button>
+              <span className="font-bold">SEND</span>
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={saveRequest}
-            className="gap-2 px-4"
+            className="gap-2 px-4 border-border/50"
           >
             <Save size={18} />
-            <span className="hidden md:inline">Save</span>
+            <span className="hidden lg:inline">Save</span>
           </Button>
         </div>
       </div>
