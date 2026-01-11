@@ -87,54 +87,67 @@ export const RequestPanel = ({ onResponse }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background/30">
       {/* URL BAR */}
-      <div className="p-4 border-b flex gap-2">
-        <Select
-          value={currentRequest.method}
-          onChange={(e) => updateCurrentRequest({ method: e.target.value })}
-          options={METHODS}
-          className="w-32 font-bold"
-        />
-        <Input
-          placeholder="Enter request URL"
-          value={currentRequest.url}
-          onChange={(e) => updateCurrentRequest({ url: e.target.value })}
-          onKeyDown={(e) => {
-            if (e.ctrlKey && e.key === "Enter") handleSend();
-          }}
-        />
-        <Button
-          onClick={handleSend}
-          disabled={loading || !currentRequest.url}
-          className="min-w-[100px] gap-2"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" size={18} />
-          ) : (
-            <Send size={18} />
-          )}
-          Send
-        </Button>
-        <Button variant="outline" onClick={saveRequest} className="gap-2">
-          <Save size={18} />
-          Save
-        </Button>
+      <div className="p-4 border-b bg-card/30 backdrop-blur-sm flex gap-3 items-center sticky top-0 z-10">
+        <div className="flex-none">
+          <Select
+            value={currentRequest.method}
+            onChange={(e) => updateCurrentRequest({ method: e.target.value })}
+            options={METHODS}
+            className="w-32 font-bold bg-background/50 border-primary/20 text-primary"
+          />
+        </div>
+        <div className="flex-1 flex gap-2">
+          <Input
+            placeholder="https://api.example.com/v1/..."
+            value={currentRequest.url}
+            onChange={(e) => updateCurrentRequest({ url: e.target.value })}
+            className="bg-background/50 border-primary/10 focus:border-primary/50 transition-all font-mono text-sm"
+            onKeyDown={(e) => {
+              if (e.ctrlKey && e.key === "Enter") handleSend();
+            }}
+          />
+          <Button
+            onClick={handleSend}
+            disabled={loading || !currentRequest.url}
+            variant="brand"
+            className="min-w-[120px] gap-2"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={18} />
+            ) : (
+              <Send size={18} />
+            )}
+            <span className="font-bold">SEND</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={saveRequest}
+            className="gap-2 px-4"
+          >
+            <Save size={18} />
+            <span className="hidden md:inline">Save</span>
+          </Button>
+        </div>
       </div>
 
       {/* TABS */}
-      <div className="flex border-b text-sm">
+      <div className="flex px-4 border-b bg-background/20 text-[11px] font-extrabold tracking-widest uppercase font-sans">
         {["params", "headers", "body"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 capitalize transition-colors border-b-2 font-medium ${
+            className={`px-6 py-3 transition-all relative group ${
               activeTab === tab
-                ? "border-primary text-primary"
-                : "border-transparent hover:text-primary/70"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
+            {activeTab === tab && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 brand-gradient glow-primary" />
+            )}
           </button>
         ))}
       </div>

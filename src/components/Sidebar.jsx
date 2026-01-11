@@ -23,40 +23,34 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 border-r bg-card flex flex-col h-screen overflow-hidden">
-      <div className="p-4 border-b space-y-4">
+    <div className="w-64 border-r bg-card flex flex-col h-screen overflow-hidden shadow-2xl z-20">
+      <div className="p-6 border-b space-y-6">
+        <div className="flex items-center gap-2 py-1">
+          <img
+            src="/src/assets/logo.png"
+            alt="RequestLab"
+            className="size-12 object-contain"
+          />
+          <h2 className="text-xl font-black tracking-tighter bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            RequestLab
+          </h2>
+        </div>
+
         <Button
           onClick={createNewRequest}
-          className="w-full justify-start gap-2"
-          variant="primary"
+          variant="brand"
+          className="w-full justify-start gap-3 py-6"
         >
-          <Plus size={18} />
-          New Request
+          <Plus size={20} />
+          <span className="font-bold tracking-tight text-base">
+            New Request
+          </span>
         </Button>
-
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-2">
-            <Server size={14} />
-            Environment
-          </label>
-          <select
-            value={activeEnvId || ""}
-            onChange={(e) => setActiveEnv(e.target.value)}
-            className="w-full bg-background border rounded p-1 text-sm outline-none"
-          >
-            <option value="">No Environment</option>
-            {environments.map((env) => (
-              <option key={env.id} value={env.id}>
-                {env.name}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
-        <div className="mb-4">
-          <h3 className="px-2 mb-2 text-xs font-semibold uppercase text-muted-foreground flex items-center gap-2">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <div>
+          <h3 className="px-3 mb-3 text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60 flex items-center gap-2">
             <Folder size={14} />
             Collections
           </h3>
@@ -65,55 +59,66 @@ export const Sidebar = () => {
               <div
                 key={req.id}
                 onClick={() => setCurrentRequest(req)}
-                className={`group flex items-center justify-between p-2 rounded cursor-pointer text-sm transition-colors ${
+                className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-sm transition-all duration-200 ${
                   currentRequest.id === req.id
-                    ? "bg-primary/10 text-primary"
-                    : "hover:bg-accent"
+                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                    : "hover:bg-accent/50 hover:translate-x-1"
                 }`}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <span
-                    className={`text-[10px] font-bold w-12 text-center uppercase ${
+                    className={`text-[9px] font-black w-10 text-center uppercase py-0.5 rounded-md border ${
                       req.method === "GET"
-                        ? "text-green-500"
+                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                         : req.method === "POST"
-                        ? "text-blue-500"
+                        ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
                         : req.method === "PUT"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        : "bg-rose-500/10 text-rose-500 border-rose-500/20"
                     }`}
                   >
                     {req.method}
                   </span>
-                  <span className="truncate">{req.name}</span>
+                  <span className="truncate font-medium">{req.name}</span>
                 </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteRequest(req.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-destructive"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-lg transition-all"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
             ))}
             {collections.length === 0 && (
-              <p className="px-2 text-xs text-muted-foreground italic">
-                No saved requests
-              </p>
+              <div className="px-3 py-8 text-center border-2 border-dashed border-muted rounded-2xl">
+                <p className="text-xs text-muted-foreground font-medium italic">
+                  No saved requests
+                </p>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="p-4 border-t flex items-center justify-between">
-        <Button variant="ghost" size="sm" className="p-1">
+      <div className="p-4 border-t bg-background/30 backdrop-blur-sm flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-8 h-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+        >
           <Settings size={18} />
         </Button>
-        <span className="text-[10px] font-mono text-muted-foreground">
-          AG API v1.0
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-black tracking-tighter text-primary/80">
+            REQUESTLAB v2.0
+          </span>
+          <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest">
+            Pro Edition
+          </span>
+        </div>
       </div>
     </div>
   );
