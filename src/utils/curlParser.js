@@ -7,6 +7,8 @@ const decodeCmdEscapes = (str) => {
     .replace(/\^</g, '<')      // ^< → <
     .replace(/\^>/g, '>')      // ^> → >
     .replace(/\^\|/g, '|')     // ^| → |
+    .replace(/\^"/g, '"')      // ^" → "
+    .replace(/\^'/g, "'")      // ^' → '
     .replace(/\^([a-zA-Z0-9])/g, '$1'); // Remove ^ before alphanumeric chars (unnecessary escapes)
 };
 
@@ -43,31 +45,55 @@ const parseQueryString = (queryString) => {
 
 export const parseCurl = (curlCommand) => {
   try {
-    // Clean up the command - remove backslashes and normalize whitespace
-    let cleaned = curlCommand.replace(/\\/g, '').replace(/\s+/g, ' ').trim();
+    // First, decode all cmd escape sequences from the entire command
+    let cleaned = decodeCmdEscapes(curlCommand).replace(/\s+/g, ' ').trim();
 
     // Extract method
     let method = 'GET';
-    const methodMatch = cleaned.match(/-X\s+(\w+)/i);
+    const methodMatch = cleaned.match(/-X\s+["']?(\w+)["']?/i);
     if (methodMatch) {
       method = methodMatch[1].toUpperCase();
-      cleaned = cleaned.replace(/-X\s+\w+/i, '');
+      cleaned = cleaned.replace(/-X\s+["']?\w+["']?/i, '');
     }
 
-    // Extract headers
+    // Extract headers using a simpler approach
     const headers = [];
-    const headerRegex = /-H\s+["']([^"']+)["']/g;
-    let headerMatch;
-    while ((headerMatch = headerRegex.exec(cleaned)) !== null) {
-      const headerStr = headerMatch[1];
-      const colonIndex = headerStr.indexOf(':');
-      if (colonIndex !== -1) {
-        const key = headerStr.substring(0, colonIndex).trim();
-        const value = headerStr.substring(colonIndex + 1).trim();
-        headers.push({ key, value, enabled: true });
+    const parts = cleaned.split(/\s+/);
+
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === '-H' && i + 1 < parts.length) {
+        let headerValue = parts[i + 1];
+
+        // Handle quoted header values that might span multiple parts
+        if (headerValue.startsWith('"') && !headerValue.endsWith('"')) {
+          // Find the closing quote
+          let j = i + 2;
+          while (j < parts.length && !parts[j - 1].endsWith('"')) {
+            headerValue += ' ' + parts[j];
+            j++;
+          }
+          i = j - 1; // Skip the parts we consumed
+        }
+
+        // Remove surrounding quotes
+        headerValue = headerValue.replace(/^["']|["']$/g, '');
+
+        const colonIndex = headerValue.indexOf(':');
+        if (colonIndex !== -1) {
+          const key = headerValue.substring(0, colonIndex).trim();
+          let value = headerValue.substring(colonIndex + 1).trim();
+
+          // Unescape quotes and decode cmd escapes in header values
+          value = value.replace(/\\"/g, '"').replace(/\\'/g, "'");
+          value = decodeCmdEscapes(value);
+
+          headers.push({ key, value, enabled: true });
+        }
       }
     }
-    cleaned = cleaned.replace(headerRegex, '');
+
+    // Remove all -H flags and their values from cleaned string
+    cleaned = cleaned.replace(/-H\s+["'][^"']*["']/g, '').trim();
 
     // Extract body/data
     let body = '';
