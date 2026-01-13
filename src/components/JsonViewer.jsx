@@ -66,7 +66,7 @@ const JsonViewer = ({ data, searchTerm = '', onSearchChange }) => {
       return (
         <div className="flex items-center gap-2 py-1">
           {key && <span className="text-primary font-medium">{key}:</span>}
-          <span className="text-orange-600">"{value}"</span>
+          <span className="text-orange-600">&ldquo;{value}&rdquo;</span>
         </div>
       );
     }

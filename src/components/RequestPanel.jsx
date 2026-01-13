@@ -194,31 +194,31 @@ export const RequestPanel = ({ onResponse }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background/30">
+    <div className="flex flex-col h-full bg-card/20 animate-slide-in">
       {/* URL BAR */}
-      <div className="p-4 border-b bg-card/10 backdrop-blur-sm flex gap-3 items-center sticky top-0 z-10 transition-all">
+      <div className="p-6 border-b border-border/30 bg-card/40 backdrop-blur-sm flex gap-4 items-center sticky top-0 z-10 transition-all shadow-sm animate-fade-in-up">
         <div className="flex-none">
           <Select
             value={currentRequest.method}
             onChange={(e) => updateCurrentRequest({ method: e.target.value })}
             options={METHODS}
-            className={`w-36 font-black ${
+            className={`w-40 font-black text-sm ${
               currentRequest.method === "GET"
-                ? "text-emerald-500"
+                ? "text-emerald-600"
                 : currentRequest.method === "POST"
-                ? "text-blue-500"
+                ? "text-blue-600"
                 : currentRequest.method === "PUT"
-                ? "text-amber-500"
-                : "text-rose-500"
+                ? "text-amber-600"
+                : "text-rose-600"
             }`}
           />
         </div>
-        <div className="flex-1 flex gap-2">
+        <div className="flex-1 flex gap-3">
           <Input
             placeholder="https://api.example.com/v1/resource... or paste curl command"
             value={currentRequest.url}
             onChange={handleUrlChange}
-            className="bg-background/40 border-primary/5 focus:border-primary/40 transition-all font-mono text-sm shadow-inner"
+            className="bg-card/60 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 font-mono text-sm shadow-lg hover:shadow-xl"
             onKeyDown={(e) => {
               if (e.ctrlKey && e.key === "Enter") handleSend();
             }}
@@ -227,7 +227,7 @@ export const RequestPanel = ({ onResponse }) => {
             <Button
               onClick={handleCancel}
               variant="destructive"
-              className="min-w-[120px] gap-2 glow-secondary"
+              className="min-w-[140px] gap-2 glow-secondary shadow-lg hover:shadow-xl"
             >
               <Loader2 className="animate-spin" size={18} />
               <span className="font-bold">CANCEL</span>
@@ -237,7 +237,7 @@ export const RequestPanel = ({ onResponse }) => {
               onClick={handleSend}
               disabled={!currentRequest.url}
               variant="brand"
-              className="min-w-[120px] gap-2"
+              className={`min-w-[140px] gap-2 shadow-lg hover:shadow-xl transition-all duration-200 ${currentRequest.url ? 'animate-bounce-in' : ''}`}
             >
               <Send size={18} />
               <span className="font-bold">SEND</span>
@@ -246,42 +246,42 @@ export const RequestPanel = ({ onResponse }) => {
           <Button
             variant="outline"
             onClick={saveRequest}
-            className="gap-2 px-4 border-border/50"
+            className="gap-2 px-5 border-border/50 hover:border-primary/30 shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Save size={18} />
-            <span className="hidden lg:inline">Save</span>
+            <span className="hidden lg:inline font-medium">Save</span>
           </Button>
         </div>
       </div>
 
       {/* TABS */}
-      <div className="flex px-4 border-b bg-background/20 text-[11px] font-extrabold tracking-widest uppercase font-sans">
+      <div className="flex px-6 border-b border-border/30 bg-card/20 text-xs font-bold tracking-widest uppercase font-sans shadow-inner">
         {["params", "headers", "body"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 transition-all relative group ${
+            className={`px-8 py-4 transition-all duration-300 relative group hover:bg-accent/30 ${
               activeTab === tab
-                ? "text-primary"
+                ? "text-primary font-black"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab}
             {activeTab === tab && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 brand-gradient glow-primary" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 electric-gradient glow-primary rounded-t-sm" />
             )}
           </button>
         ))}
       </div>
 
       {/* TAB CONTENT */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-6 bg-card/10">
         {(activeTab === "params" || activeTab === "headers") && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {currentRequest[activeTab].map((item, index) => (
-              <div key={index} className="flex gap-2 items-center">
+              <div key={index} className="flex gap-3 items-center p-3 bg-card/40 rounded-lg border border-border/30 hover:border-primary/20 transition-all duration-200 group">
                 <Input
-                  className="h-8 text-xs"
+                  className="h-10 text-sm bg-background/60 border-border/50 focus:border-primary/40 transition-all duration-200"
                   placeholder="Key"
                   value={item.key}
                   onChange={(e) =>
@@ -289,7 +289,7 @@ export const RequestPanel = ({ onResponse }) => {
                   }
                 />
                 <Input
-                  className="h-8 text-xs"
+                  className="h-10 text-sm bg-background/60 border-border/50 focus:border-primary/40 transition-all duration-200"
                   placeholder="Value"
                   value={item.value}
                   onChange={(e) =>
@@ -299,10 +299,10 @@ export const RequestPanel = ({ onResponse }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-10 w-10 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 rounded-lg"
                   onClick={() => removeListItem(activeTab, index)}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </Button>
               </div>
             ))}
@@ -310,16 +310,16 @@ export const RequestPanel = ({ onResponse }) => {
               variant="outline"
               size="sm"
               onClick={() => addListItem(activeTab)}
-              className="gap-2 text-xs"
+              className="gap-3 text-sm px-4 py-3 border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
             >
-              <Plus size={14} /> Add{" "}
-              {activeTab === "params" ? "Parameter" : "Header"}
+              <Plus size={16} />
+              Add {activeTab === "params" ? "Parameter" : "Header"}
             </Button>
           </div>
         )}
 
         {activeTab === "body" && (
-          <div className="h-full min-h-[300px] border rounded-md overflow-hidden">
+          <div className="h-full min-h-[400px] border border-border/50 rounded-xl overflow-hidden shadow-lg bg-card/60">
             <Editor
               height="100%"
               defaultLanguage="json"
@@ -331,10 +331,14 @@ export const RequestPanel = ({ onResponse }) => {
                 fontSize: 14,
                 lineNumbers: "on",
                 roundedSelection: false,
+                padding: { top: 16, bottom: 16, left: 16, right: 16 },
                 scrollbar: {
-                  vertical: "hidden",
-                  horizontal: "hidden",
+                  vertical: "visible",
+                  horizontal: "visible",
+                  verticalScrollbarSize: 8,
+                  horizontalScrollbarSize: 8,
                 },
+                wordWrap: "on",
               }}
               onChange={(value) => updateCurrentRequest({ body: value })}
             />

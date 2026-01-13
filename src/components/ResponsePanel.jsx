@@ -14,21 +14,27 @@ export const ResponsePanel = ({ response }) => {
 
   if (!response) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-background/50 p-8 font-sans">
-        <div className="w-20 h-20 mb-6 opacity-20 relative">
+      <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-gradient-to-br from-card/30 to-card/10 p-12 font-sans animate-fade-in-up">
+        <div className="w-32 h-32 mb-8 opacity-30 relative animate-float">
           <img
             src={logo}
             alt=""
             className="w-full h-full object-contain grayscale"
           />
-          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+          <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse-glow" />
         </div>
-        <p className="text-xl font-extrabold tracking-widest text-foreground/40 uppercase">
+        <p className="text-3xl font-black tracking-widest text-foreground/50 uppercase mb-4">
           Ready for Request
         </p>
-        <p className="text-xs font-semibold tracking-tight mt-2 max-w-[200px] text-center opacity-60">
-          Configure your request and hit Send to see the magic happen.
+        <p className="text-lg font-semibold tracking-wide mt-4 max-w-[300px] text-center opacity-70 leading-relaxed">
+          Configure your API request above and hit Send to see the magic happen.
         </p>
+        <div className="mt-8 flex items-center gap-4 text-sm font-medium opacity-50">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <span>Waiting for request</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -49,51 +55,51 @@ export const ResponsePanel = ({ response }) => {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-[200px] bg-background/40">
+    <div className="flex flex-col h-full min-h-[240px] bg-card/30 animate-slide-in">
       {/* STATUS BAR */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-card/20 backdrop-blur-md text-sm font-medium">
-        <div className="flex gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Status:</span>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/30 bg-card/60 backdrop-blur-md text-sm font-medium shadow-sm">
+        <div className="flex gap-8">
+          <div className="flex items-center gap-3">
+            <span className="text-muted-foreground font-medium">Status:</span>
             <span
-              className={`px-2 py-1 rounded-md border font-semibold ${getStatusColor(
+              className={`px-3 py-1.5 rounded-lg border font-bold text-sm shadow-sm ${getStatusColor(
                 response.status
               )}`}
             >
               {response.status} {response.statusText}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Time:</span>
-            <span className="text-primary font-semibold">{response.time} ms</span>
+          <div className="flex items-center gap-3">
+            <span className="text-muted-foreground font-medium">Time:</span>
+            <span className="text-primary font-bold text-lg">{response.time} ms</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Size:</span>
-            <span className="text-secondary font-semibold">
+          <div className="flex items-center gap-3">
+            <span className="text-muted-foreground font-medium">Size:</span>
+            <span className="text-secondary font-bold text-lg">
               {(response.size / 1024).toFixed(2)} KB
             </span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowComparison(true)}
-            className="h-8 gap-2 text-sm hover:bg-primary/10 transition-colors"
+            className="h-10 gap-3 text-sm hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-4"
           >
-            <GitCompare size={14} />
+            <GitCompare size={16} />
             Compare
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="h-8 gap-2 text-sm hover:bg-primary/10 transition-colors"
+            className="h-10 gap-3 text-sm hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-4"
           >
             {copied ? (
-              <Check size={14} className="text-emerald-500" />
+              <Check size={16} className="text-emerald-500" />
             ) : (
-              <Copy size={14} />
+              <Copy size={16} />
             )}
             {copied ? "Copied!" : "Copy Raw"}
           </Button>
@@ -101,7 +107,7 @@ export const ResponsePanel = ({ response }) => {
       </div>
 
       {/* TABS */}
-      <div className="flex px-4 border-b bg-background/10 text-sm font-medium">
+      <div className="flex px-6 border-b border-border/30 bg-card/20 text-sm font-medium shadow-inner">
         {[
           { key: "tree", label: "Tree", icon: TreePine },
           { key: "pretty", label: "Pretty" },
@@ -112,14 +118,17 @@ export const ResponsePanel = ({ response }) => {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`px-6 py-3 transition-all relative group flex items-center gap-2 hover:bg-muted/20 ${
+            className={`px-8 py-4 transition-all duration-300 relative group flex items-center gap-3 hover:bg-accent/30 rounded-t-lg ${
               activeTab === key
-                ? "text-primary border-b-2 border-primary"
+                ? "text-primary font-bold bg-primary/5"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {Icon && <Icon size={14} />}
+            {Icon && <Icon size={16} />}
             {label}
+            {activeTab === key && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 electric-gradient glow-primary rounded-t-sm" />
+            )}
           </button>
         ))}
       </div>

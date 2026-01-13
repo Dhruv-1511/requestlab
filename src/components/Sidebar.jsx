@@ -32,15 +32,15 @@ export const Sidebar = ({ searchTerm = "" }) => {
   };
 
   return (
-    <div className="w-64 border-r bg-card flex flex-col h-screen overflow-hidden shadow-2xl z-20">
-      <div className="p-6 border-b space-y-6">
-        <div className="flex items-center gap-2 py-1">
+    <div className="w-72 border-r border-border/50 bg-card/90 flex flex-col h-screen overflow-hidden shadow-2xl z-20 backdrop-blur-xl">
+      <div className="p-8 border-b border-border/30 space-y-8">
+        <div className="flex items-center gap-3 py-2">
           <img
             src={logo}
             alt="RequestLab"
-            className="size-12 object-contain"
+            className="size-14 object-contain"
           />
-          <h2 className="text-xl font-black tracking-tighter bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h2 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-primary via-secondary to-purple-500 bg-clip-text text-transparent">
             RequestLab
           </h2>
         </div>
@@ -48,63 +48,69 @@ export const Sidebar = ({ searchTerm = "" }) => {
         <Button
           onClick={createNewRequest}
           variant="brand"
-          className="w-full justify-start gap-3 py-6"
+          className="w-full justify-start gap-4 py-8 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
         >
-          <Plus size={20} />
-          <span className="font-bold tracking-tight text-base">
+          <Plus size={24} />
+          <span className="tracking-tight">
             New Request
           </span>
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
         <div>
-          <h3 className="px-3 mb-3 text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60 flex items-center gap-2">
-            <Folder size={14} />
+          <h3 className="px-4 mb-4 text-xs font-bold tracking-widest uppercase text-muted-foreground/70 flex items-center gap-3">
+            <Folder size={16} />
             Collections
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-2">
             {filteredCollections.map((req) => (
               <div
                 key={req.id}
                 onClick={() => setCurrentRequest(req)}
-                className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-sm transition-all duration-200 ${
+                className={`group flex items-center justify-between p-4 rounded-xl cursor-pointer text-sm transition-all duration-300 hover:shadow-md ${
                   currentRequest.id === req.id
-                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                    : "hover:bg-accent/50 hover:translate-x-1"
+                    ? "bg-primary/15 text-primary border border-primary/30 shadow-lg"
+                    : "hover:bg-accent/40 hover:translate-x-2 hover:scale-[1.02]"
                 }`}
               >
-                <div className="flex items-center gap-2 overflow-hidden">
+                <div className="flex items-center gap-3 overflow-hidden">
                   <span
-                    className={`text-[9px] font-black w-10 text-center uppercase py-0.5 rounded-md border ${
+                    className={`text-xs font-black w-12 text-center uppercase py-1 rounded-lg border shadow-sm ${
                       req.method === "GET"
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                        ? "bg-emerald-500/20 text-emerald-600 border-emerald-500/30"
                         : req.method === "POST"
-                        ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                        ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
                         : req.method === "PUT"
-                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                        ? "bg-amber-500/20 text-amber-600 border-amber-500/30"
+                        : "bg-rose-500/20 text-rose-600 border-rose-500/30"
                     }`}
                   >
                     {req.method}
                   </span>
-                  <span className="truncate font-medium">{req.name}</span>
+                  <span className="truncate font-semibold text-foreground">{req.name}</span>
                 </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteRequest(req.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-lg transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-2 hover:bg-destructive/15 hover:text-destructive rounded-lg transition-all duration-200 hover:scale-110"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             ))}
             {collections.length === 0 && (
-              <div className="px-3 py-8 text-center border-2 border-dashed border-muted rounded-2xl">
-                <p className="text-xs text-muted-foreground font-medium italic">
-                  No saved requests
+              <div className="px-6 py-12 text-center border-2 border-dashed border-muted/50 rounded-2xl bg-muted/5">
+                <div className="w-12 h-12 mx-auto mb-4 opacity-30">
+                  <Folder size={48} className="text-muted-foreground/30" />
+                </div>
+                <p className="text-sm text-muted-foreground font-semibold">
+                  No saved requests yet
+                </p>
+                <p className="text-xs text-muted-foreground/60 mt-2">
+                  Create your first request above
                 </p>
               </div>
             )}
@@ -112,19 +118,19 @@ export const Sidebar = ({ searchTerm = "" }) => {
         </div>
       </div>
 
-      <div className="p-4 border-t bg-background/30 backdrop-blur-sm flex items-center justify-between">
+      <div className="p-6 border-t border-border/30 bg-card/50 backdrop-blur-sm flex items-center justify-between shadow-inner">
         <Button
           variant="ghost"
           size="sm"
-          className="w-8 h-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+          className="w-10 h-10 p-0 rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110"
         >
-          <Settings size={18} />
+          <Settings size={20} />
         </Button>
         <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black tracking-tighter text-primary/80">
+          <span className="text-xs font-black tracking-tighter text-primary/90">
             REQUESTLAB v2.0
           </span>
-          <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-widest">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
             Pro Edition
           </span>
         </div>
